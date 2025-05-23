@@ -15,6 +15,7 @@
 #include <secblock.h>
 #include <base64.h>
 #include <osrng.h>
+
 /*============================================
 |				 ŒÕ—“¿Õ“»					 |
 ============================================*/
@@ -25,7 +26,7 @@ const unsigned int LOGIN_MAX_LENGTH = 20,
 					NOTE_BODY_MAX_LENGTH = 3000;
 
 using namespace std;
-
+namespace fs = filesystem;
 //Interface
 void ShowHeader(unsigned int LW = 40, string text = "NULL");
 int ShowStartMenu(unsigned int LW= 40);
@@ -44,6 +45,7 @@ string AES256GCM_Encrypt(const string hash, const CryptoPP::SecByteBlock& nonce,
 string AES256GCM_Decrypt(const CryptoPP::SecByteBlock& key, CryptoPP::SecByteBlock& nonce, const string& ciphertext);
 string ToBase64(const string& binary);
 string FromBase64(const string& encoded);
+bool EncryptAndSaveTXT(string hashedPassword, vector<string> Data, string login, string FileName);
 //Filemanager
 bool CreateUserFolder(string login, string hashedPassword);
 bool SearchFS(string FileName, bool IsFile);

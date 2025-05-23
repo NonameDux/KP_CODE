@@ -1,9 +1,10 @@
 #include "EncryptedNotes.h"
 using namespace CryptoPP;
 
+AutoSeededRandomPool prn;
 CryptoPP::SecByteBlock nonce(12);
-AutoSeededRandomPool rng;
-rng.GenerateBlock(nonce, nonce.size());
+prn.GenerateBlock(nonce, nonce.size());
+
 
 string sha256(const std::string& data) {
     CryptoPP::SHA256 hash;
@@ -70,4 +71,11 @@ string FromBase64(const string& encoded) {
     CryptoPP::StringSource s(encoded, true, new CryptoPP::Base64Decoder(new CryptoPP::StringSink(decoded)));
     return decoded;
 }
-bool EncryptAndSaveTXT(CryptoPP::SecByteBlock nonce, string hashedPassword,vector<string> Data,)
+bool EncryptAndSaveTXT(string hashedPassword, vector<string> Data,string login,string FileName) {
+    for (size_t i = 0; i <= Data.size() - 1; i++) {
+        WriteFile(login, FileName, AES256GCM_Encrypt(hashedPassword, nonce, Data[i]));
+
+    }
+    
+
+}

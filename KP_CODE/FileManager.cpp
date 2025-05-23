@@ -1,6 +1,6 @@
 #include "EncryptedNotes.h"
 
-namespace fs = filesystem;
+
 bool CreateUserFolder(string login,string hashedPassword) {
     fs::path folder = "./" + login;
     fs::create_directories(folder); // создаёт директорию, если не существует
@@ -72,7 +72,7 @@ bool WriteFile(string login, string FileName, string Data) {
     fs::path folder = "./" + login;
     fs::path File = FileName + ".txt";
     fs::path filePath = folder / File;
-    ofstream fout(filePath);
+    ofstream fout(filePath, ios::app);
     fout << Data;//Зберігаємо хєш від хєшу паролю у файлі автентифікації щоб порівнювати його при вході у аккаунт
     fout.close();
     return true;

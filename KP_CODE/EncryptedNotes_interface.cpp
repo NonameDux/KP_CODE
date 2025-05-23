@@ -44,8 +44,8 @@ int ShowMainMenu(unsigned int LW) {
 	cout << left << setw(LW) << "\t3 - Вихід" << endl;
 	cout << left << "Оберіть опцію:";
 	cin >> answer;
-
-	return answer;
+	if (answer >= 1 and answer <= 3) { return answer; }
+	else { system("CLS"); cout << "Такого варіанту відповіді не існує!"; Sleep(3000); return answer; }
 }
 int ShowRegistrationForm(unsigned int LW, string& LOGIN,string& PASSWORD) {
 	system("CLS");
@@ -109,18 +109,14 @@ int ShowNotesList(unsigned int LW, string& LOGIN) {
 }
 int ShowCreateNoteForm(unsigned int LW, string& LOGIN) {
 	system("CLS");
-	string text = "Створення нотатки", answer = "SEE";
-	unsigned int LenghtWidthMedium = LW, ChosedNote = 0;
+	string text = "Створення нотатки", DATA = "",NoteName = "NoteName";
+	unsigned int LenghtWidthMedium = LW;
 	ShowHeader(LW + 20, text);
 	cout << left << setw(LenghtWidthMedium) << "Введіть назву нотатки" << ":";
-	cin >> answer;
+	cin >> NoteName;
 	cout << left << setw(LenghtWidthMedium) << "Введіть текст нотатки(щоб вийти введіть -1)" << ":";
-	cin >> ChosedNote;
-	cin >> ChosedNote;
-	cin >> ChosedNote;
-	cin >> ChosedNote;
-	cin >> ChosedNote;
-	return 0;
+	while (DATA != "-1") { cin >> DATA; WriteFile(LOGIN, NoteName, DATA); }
+	return true;
 }
 int ShowNote(unsigned int LW, string FileName, string LOGIN) {
 	system("CLS");

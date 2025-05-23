@@ -21,6 +21,21 @@ void main() {
             cout << "EXIT" << endl;
             break;
         }
+    }
+    ERRORS = 1;
+    while (ERRORS != 0) {
+        switch (ShowMainMenu(LineWidthFull)) { //Стартове меню
+        case 1:
+            ERRORS = ShowNotesList(LineWidthFull, LOGIN);
+            break;
+        case 2:
+            ERRORS = ShowCreateNoteForm(LineWidthFull, LOGIN);
+            break;
+        case 3:
+            ERRORS = 0;
+            cout << "EXIT" << endl;
+            break;
+        default: ERRORS = 1;
+        }
     }    
-    ShowNotesList(LineWidthFull,LOGIN);
 }

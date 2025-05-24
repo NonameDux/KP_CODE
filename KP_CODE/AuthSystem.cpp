@@ -3,22 +3,28 @@
 
 
 using namespace std;
-int RegisterUser(unsigned int LW,const string& username, const string& password) {
+int RegisterUser(unsigned int LW, const string& username, const string& password, string& hashedPassword) {
     string u = username, p = password;
-    int err = ShowRegistrationForm(LW,u,p);
-    string hashedPassword = sha256(p);//Створення хешу паролю, який буде використовуватися для входу в аккаунт, та розшифрування нотаток.
+    int err = 99;
+
+     err = ShowRegistrationForm(LW, u, p, hashedPassword);
     if (err == 1) {
         cout << "Введені паролі не співпадають" << endl;
         Sleep(5000);
-        err = ShowRegistrationForm(LW, u, p);
+        err = ShowRegistrationForm(LW, u, p, hashedPassword);
     }
-    else if (err == 0) { CreateUserFolder(u, hashedPassword); cout << "\nРегістрація успішна, для входу в аккаунт буде використовуватися логін \"" << u << "\"" << endl; }
-    cout << hashedPassword;
+    else if (err == 0) {
+        CreateUserFolder(u, hashedPassword);
+        cout << "\nРегістрація успішна, для входу в аккаунт буде використовуватися логін \"" << u << "\"";
+        AUTHORIZED = true;
+    }
+       
+    
     return 0;
 }
 
-int LoginUser(unsigned int LW,string& username) {
-    int err = ShowLoginForm(LW, username);
+int LoginUser(unsigned int LW,string& username, string& hashedPassword) {
+    int err = ShowLoginForm(LW, username, hashedPassword);
     if (err == 2) {
         cout << "Невірний пароль, трохи зачекайте і спробуйте знову." << endl;
         Sleep(5000);

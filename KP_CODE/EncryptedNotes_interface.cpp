@@ -10,11 +10,12 @@
 //ShowError
 void ShowHeader(unsigned int LW, string text)
 {
-	size_t LenToCenter = (LW + size(text)) / 2;
+	size_t LenToCenter = (LW + size(text)) / 4;
 	cout << setw(LW) << setfill('=') << "=" << endl;
-	cout << setw(LenToCenter) << setfill(' ') << text << endl;
+	cout << string(LenToCenter, ' ') << text << endl;
 	cout << setw(LW) << setfill('=') << "=" << setfill(' ') << endl;
 }
+
 int ShowStartMenu(unsigned int LW) {
 	system("CLS");
 
@@ -28,7 +29,12 @@ int ShowStartMenu(unsigned int LW) {
 	cout << left << setw(LW) << "\t3 - Вихід" << endl;
 	cout << left << "Оберіть опцію:";
 	cin >> answer;
-
+	if (cin.fail()) {
+		cin.clear(); // Сбрасываем флаг ошибки
+		cin.ignore(10000, '\n'); // Очищаем ввод
+		cout << "[ERROR]Некоректне значення! Спробуйте ще раз.\n";
+		Sleep(1000);
+	}
 	return answer;
 }
 int ShowMainMenu(unsigned int LW) {
@@ -44,10 +50,15 @@ int ShowMainMenu(unsigned int LW) {
 	cout << left << setw(LW) << "\t3 - Вихід" << endl;
 	cout << left << "Оберіть опцію:";
 	cin >> answer;
-	if (answer >= 1 and answer <= 3) { return answer; }
-	else { system("CLS"); cout << "Такого варіанту відповіді не існує!"; Sleep(3000); return answer; }
+	if (cin.fail()) {
+		cin.clear(); // Сбрасываем флаг ошибки
+		cin.ignore(10000, '\n'); // Очищаем ввод
+		cout << "[ERROR]Некоректне значення! Спробуйте ще раз.\n";
+		Sleep(1000);
+	}
+	return answer;
 }
-int ShowRegistrationForm(unsigned int LW, string& LOGIN,string& PASSWORD) {
+int ShowRegistrationForm(unsigned int LW, string& LOGIN,string& PASSWORD,string& hashedPassword) {
 	system("CLS");
 
 	string text = "Регістрація", pass1,pass2;
@@ -57,6 +68,7 @@ int ShowRegistrationForm(unsigned int LW, string& LOGIN,string& PASSWORD) {
 
 	cout << left << setw(LenghtWidthMedium) << "Введіть логін" << ":";
 	cin >> LOGIN;
+	if (SearchFS(LOGIN, false)) { cout <<"Користувач з таким ім'ям все існує!"; Sleep(2000); return 2; }
 	cout << left << setw(LenghtWidthMedium) << "Введіть пароль" << ":";
 	cin >> pass1;
 	cout << left << setw(LenghtWidthMedium) << "Введіть пароль ще раз" << ":";
@@ -64,10 +76,10 @@ int ShowRegistrationForm(unsigned int LW, string& LOGIN,string& PASSWORD) {
 
 	if (pass1 == pass2) { PASSWORD = pass1;}
 	else { return 1; }
-
+	hashedPassword = sha256(PASSWORD);
 	return 0;
 }
-int ShowLoginForm(unsigned int LW, string& LOGIN) {
+int ShowLoginForm(unsigned int LW, string& LOGIN, string& hashedPassword) {
 	system("CLS");
 	string text = "Вхід у аккаунт", PASSWORD;
 	int answer = 0, LenghtWidthMedium = LW - 20;
@@ -81,14 +93,14 @@ int ShowLoginForm(unsigned int LW, string& LOGIN) {
 	cin >> PASSWORD;
 	if (sha256(sha256(PASSWORD)) != ReadFile(LOGIN, "Auth")) { return 2; }
 
-	
+	hashedPassword = sha256(PASSWORD);
 	return 0;
 }
-int ShowNotesList(unsigned int LW, string& LOGIN) {
+int ShowNotesList(unsigned int LW, string& LOGIN, string& hashedPassword) {
 	system("CLS");
 	string text = "Ваші нотатки", answer = "SEE";
 	vector<string> files = ShowAllFiles(LOGIN);
-	unsigned int LenghtWidthMedium = LW - 20, ChosedNote = 0;
+	unsigned int LenghtWidthMedium = LW - 20, ChosedNote = 0, err = 0;
 	ShowHeader(LW, text);
 	for (size_t i = 0; i <= files.size()-1; i++) { cout << i + 1 << ":" << files[i] << endl; }
 	cout << setw(LW) << setfill('=') << "=" << setfill(' ') << endl;
@@ -98,35 +110,65 @@ int ShowNotesList(unsigned int LW, string& LOGIN) {
 	if (answer == "SEE" or answer == "see" or answer == "See" or answer == "sEE")	{
 		cout << left << setw(LenghtWidthMedium) << "Введіть номер нотатки яку бажаете переглянути" << ":";
 		cin >> ChosedNote;
-		cout << ShowNote(LW,files[ChosedNote-1],LOGIN);
+		err = ShowNote(LW,files[ChosedNote-1],LOGIN, hashedPassword);
 	}
 
 	else if (answer == "ADD" or answer == "add" or answer == "Add" or answer == "aDD") {
-		ShowCreateNoteForm(LW, LOGIN);
+		ShowCreateNoteForm(LW, LOGIN, hashedPassword);
 	}
+	else { cout << "Такого варіанту відповіді не існує!" << endl; Sleep(1000); return 1; }
 
-	return 0;
+	return err;
 }
-int ShowCreateNoteForm(unsigned int LW, string& LOGIN) {
+int ShowCreateNoteForm(unsigned int LW, string& LOGIN,string hashedPassword) {
 	system("CLS");
-	string text = "Створення нотатки", DATA = "",NoteName = "NoteName";
+	string text = "Створення нотатки", DATA = " ",NoteName = "NoteName";
 	unsigned int LenghtWidthMedium = LW;
 	ShowHeader(LW + 20, text);
-	cout << left << setw(LenghtWidthMedium) << "Введіть назву нотатки" << ":";
+	cout << left << setw(LenghtWidthMedium) << "Введіть назву нотатки(без пропусків!)" << ":";
 	cin >> NoteName;
-	cout << left << setw(LenghtWidthMedium) << "Введіть текст нотатки(щоб вийти введіть -1)" << ":";
-	while (DATA != "-1") { cin >> DATA; WriteFile(LOGIN, NoteName, DATA); }
+	cout << left << setw(LenghtWidthMedium) << "Введіть текст нотатки(щоб вийти введіть натисніть CTRL + Z)" << ":";
+	string all;
+	char ch;
+	while (cin.get(ch)) {
+		all += ch;		
+	}
+	if (cin.eof()) {
+		cout << "\n[INFO] Успішний введення (Ctrl + Z).\n";
+	}
+	else {
+		cerr << "[ERROR] Помилка при введені даних.\n";
+		return 1;
+	}
+	cout << "\nВы ввели:\n" << all << endl;
+	EncryptAndSaveTXT(hashedPassword, all, LOGIN, NoteName);
+	// Программа продолжается...
+	cout << "[OK]" << endl;
 	return true;
 }
-int ShowNote(unsigned int LW, string FileName, string LOGIN) {
+int ShowNote(unsigned int LW, string FileName, string LOGIN,string Password) {
 	system("CLS");
 	string text = "Нотатка \""+FileName+"\"", answer;
 	unsigned int LenghtWidthMedium = LW - 20;
 	vector<string> lines = InputFile(LOGIN, FileName);
 	ShowHeader(LW, text);
-	for (size_t i = 0; i <= lines.size() -1; i++) { cout << left << setw(LW) << lines[i] << endl; }
+	for (size_t i = 0; i <= lines.size() - 1; i++) { 
+		
+		cout << left << setw(LW) << DecryptNote(lines[i],Password) << endl;
+	}
 	cout << setw(LW) << setfill('=') << "=" << setfill(' ') << endl;
 	cout << left << setw(LenghtWidthMedium) << "Виберіть дію(EXIT,DEL)" << ":";
 	cin >> answer;
+	if (answer == "BACK" or answer == "back" or answer == "Back" or answer == "bACK") {
+		cout << left << setw(LenghtWidthMedium) << "Введіть номер нотатки яку бажаете переглянути" << ":";
+	}
+
+	else if (answer == "DEL" or answer == "del" or answer == "dEL" or answer == "Del") {
+		cout << "Ви впевнені? Ця дія видалить цю нотатку!(т/н):";
+		cin >> answer;
+		if (answer == "т") {}
+		else { return 0; }
+	}
+	else { cout << "Такого варіанту відповіді не існує!" << endl; Sleep(1000); return 1; }
 	return 0;
 }

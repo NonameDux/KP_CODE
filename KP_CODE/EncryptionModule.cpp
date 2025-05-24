@@ -1,9 +1,14 @@
 #include "EncryptedNotes.h"
 using namespace CryptoPP;
 
-AutoSeededRandomPool prn;
-CryptoPP::SecByteBlock nonce(12);
-prn.GenerateBlock(nonce, nonce.size());
+CryptoPP::SecByteBlock generateNonce() {
+    std::vector<CryptoPP::byte> nonce(12);
+    if (BCryptGenRandom(nullptr, nonce.data(), (ULONG)12, BCRYPT_USE_SYSTEM_PREFERRED_RNG) != 0) {
+        throw std::runtime_error("BCryptGenRandom failed");
+    }
+    CryptoPP::SecByteBlock cppNonce(nonce.data(), nonce.size());
+    return cppNonce;
+}
 
 
 string sha256(const std::string& data) {
@@ -71,11 +76,54 @@ string FromBase64(const string& encoded) {
     CryptoPP::StringSource s(encoded, true, new CryptoPP::Base64Decoder(new CryptoPP::StringSink(decoded)));
     return decoded;
 }
-bool EncryptAndSaveTXT(string hashedPassword, vector<string> Data,string login,string FileName) {
-    for (size_t i = 0; i <= Data.size() - 1; i++) {
-        WriteFile(login, FileName, AES256GCM_Encrypt(hashedPassword, nonce, Data[i]));
-
-    }
-    
-
+CryptoPP::SecByteBlock HexToBytes(const std::string& hex) {
+    std::string raw;
+    CryptoPP::StringSource(hex, true,
+        new CryptoPP::HexDecoder(
+            new CryptoPP::StringSink(raw)
+        )
+    );
+    return CryptoPP::SecByteBlock(reinterpret_cast<const CryptoPP::byte*>(raw.data()), raw.size());
 }
+bool EncryptAndSaveTXT(string hashedPassword, string Data, string login, string FileName) {
+    // Преобразуем hex-строку в 32-байтный ключ
+    CryptoPP::SecByteBlock key = HexToBytes(hashedPassword);
+
+    // Генерируем nonce
+    CryptoPP::SecByteBlock nonce = generateNonce();
+
+    // Шифруем
+    string encrypted = AES256GCM_Encrypt(std::string(reinterpret_cast<const char*>(key.data()), key.size()), nonce, Data);
+     
+    // Сохраняем
+    WriteFile(login, FileName, ToBase64(encrypted));
+
+    return true;
+}
+string DecryptNote(string data,string Password) {
+    string decoded = FromBase64(data);
+    SecByteBlock key = HexToBytes(Password);
+    SecByteBlock nonce(reinterpret_cast<const CryptoPP::byte*>(decoded.data()), 12);  // первые 12 байт
+    string ciphertext = decoded.substr(12);  // остальное: шифр + тег
+    string decrypted;
+    try {
+        GCM<AES>::Decryption decryptor;
+        decryptor.SetKeyWithIV(key, key.size(), nonce, nonce.size());
+
+        AuthenticatedDecryptionFilter df(decryptor,
+            new StringSink(decrypted),
+            AuthenticatedDecryptionFilter::THROW_EXCEPTION, 16  // 16 байт GCM-тега
+        );
+
+        df.ChannelPut(DEFAULT_CHANNEL, reinterpret_cast<const CryptoPP::byte*>(ciphertext.data()), ciphertext.size());
+        df.ChannelMessageEnd(DEFAULT_CHANNEL);
+    }
+    catch (const Exception& e) {
+        cerr << "Ошибка расшифровки: " << e.what() << endl;
+        return "";
+    }
+
+    return decrypted;
+}
+
+

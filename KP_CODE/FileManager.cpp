@@ -1,8 +1,21 @@
 #include "EncryptedNotes.h"
 
+bool CheckUsersFolder(){
 
-bool CreateUserFolder(string login,string hashedPassword) {
-    fs::path folder = "./" + login;
+    fs::path folder = "./users";
+    if (std::filesystem::exists(folder)) {
+        return true;
+    }
+    else {
+        fs::create_directories(folder);
+    }
+
+    return true;
+}
+
+
+bool CreateUserFolder(string login, string hashedPassword) {
+    fs::path folder = "./users/" + login;
     fs::create_directories(folder); // создаёт директорию, если не существует
     fs::path filePath = folder / "Auth.txt";
 
@@ -12,7 +25,7 @@ bool CreateUserFolder(string login,string hashedPassword) {
 return true;
 }
 bool SearchFS(string FileName, bool IsFile) {
-    fs::path folder = "./" + FileName;
+    fs::path folder = "./users/" + FileName;
     fs::path File = FileName + ".txt";
     fs::path filePath = folder / File;
     if (IsFile == true) {
@@ -34,7 +47,7 @@ bool SearchFS(string FileName, bool IsFile) {
     return true;
 }
 string ReadFile(string login, string FileName) {
-    fs::path folder = "./" + login;
+    fs::path folder = "./users/" + login;
     fs::path File = FileName + ".txt";
     fs::path filePath = folder / File;
     string DATA;
@@ -44,7 +57,7 @@ string ReadFile(string login, string FileName) {
 return DATA;
 }
 vector<string> ShowAllFiles(string login) {
-    fs::path folder = "./" + login ;
+    fs::path folder = "./users/" + login ;
     size_t i = 1;
     vector<string> filenames;
     for (const auto& entry : fs::directory_iterator(folder)) {
@@ -55,7 +68,7 @@ vector<string> ShowAllFiles(string login) {
 return filenames;
 }
 vector<string> InputFile(string login, string FileName) {
-    fs::path folder = "./" + login;
+    fs::path folder = "./users/" + login;
     fs::path File = FileName + ".txt";
     fs::path filePath = folder / File;
     ifstream infile(filePath);
@@ -69,7 +82,7 @@ vector<string> InputFile(string login, string FileName) {
     return lines;
 }
 bool WriteFile(string login, string FileName, string Data) {
-    fs::path folder = "./" + login;
+    fs::path folder = "./users/" + login;
     fs::path File = FileName + ".txt";
     fs::path filePath = folder / File;
     ofstream fout(filePath, ios::app);

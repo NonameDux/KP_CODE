@@ -5,22 +5,22 @@
 using namespace std;
 int RegisterUser(unsigned int LW, const string& username, const string& password, string& hashedPassword) {
     string u = username, p = password;
-    int err = 99;
+    int err = 0;
 
      err = ShowRegistrationForm(LW, u, p, hashedPassword);
     if (err == 1) {
         cout << "Введені паролі не співпадають" << endl;
         Sleep(5000);
         err = ShowRegistrationForm(LW, u, p, hashedPassword);
+        return 1;
     }
     else if (err == 0) {
         CreateUserFolder(u, hashedPassword);
         cout << "\nРегістрація успішна, для входу в аккаунт буде використовуватися логін \"" << u << "\"";
-        AUTHORIZED = true;
     }
        
     
-    return 0;
+    return err;
 }
 
 int LoginUser(unsigned int LW,string& username, string& hashedPassword) {

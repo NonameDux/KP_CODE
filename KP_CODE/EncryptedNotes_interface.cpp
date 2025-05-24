@@ -166,7 +166,7 @@ int ShowNote(unsigned int LW, string FileName, string LOGIN,string Password) {
 	else if (answer == "DEL" or answer == "del" or answer == "dEL" or answer == "Del") {
 		cout << "Ви впевнені? Ця дія видалить цю нотатку!(т/н):";
 		cin >> answer;
-		if (answer == "т") {}
+		if (answer == "т") { cout << "Нотатка була видалена"; }
 		else { return 0; }
 	}
 	else { cout << "Такого варіанту відповіді не існує!" << endl; Sleep(1000); return 1; }

@@ -68,6 +68,7 @@ int ShowRegistrationForm(unsigned int LW, string& LOGIN,string& PASSWORD,string&
 
 	cout << left << setw(LenghtWidthMedium) << "Введіть логін" << ":";
 	cin >> LOGIN;
+	if (LOGIN.size() >= LOGIN_MAX_LENGTH) { cout << "Занадто довгий логін!"; Sleep(2000); return 2; }
 	if (SearchFS(LOGIN, false)) { cout <<"Користувач з таким ім'ям все існує!"; Sleep(2000); return 2; }
 	cout << left << setw(LenghtWidthMedium) << "Введіть пароль" << ":";
 	cin >> pass1;

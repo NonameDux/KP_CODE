@@ -94,13 +94,13 @@ bool EncryptAndSaveTXT(string hashedPassword, string Data, string login, string 
 
     // Шифруем
     string encrypted = AES256GCM_Encrypt(std::string(reinterpret_cast<const char*>(key.data()), key.size()), nonce, Data);
-     
+
     // Сохраняем
     WriteFile(login, FileName, ToBase64(encrypted));
 
     return true;
 }
-string DecryptNote(string data,string Password) {
+string DecryptNote(string data, string Password) {
     string decoded = FromBase64(data);
     SecByteBlock key = HexToBytes(Password);
     SecByteBlock nonce(reinterpret_cast<const CryptoPP::byte*>(decoded.data()), 12);  // первые 12 байт

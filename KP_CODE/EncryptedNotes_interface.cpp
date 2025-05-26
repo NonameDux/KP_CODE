@@ -1,13 +1,6 @@
 #include "EncryptedNotes.h"
 
-//ShowStartMenu
-//ShowMainMenu
-//ShowRegistrationForm
-//ShowLoginForm
-//ShowCreateNoteForm
-//ShowNotesList
-//ShowNoteContent
-//ShowError
+
 void ShowHeader(unsigned int LW, string text)
 {
 	size_t LenToCenter = (LW + size(text)) / 4;
@@ -34,6 +27,7 @@ int ShowStartMenu(unsigned int LW) {
 		cin.ignore(10000, '\n'); // Очищаем ввод
 		cout << "[ERROR]Некоректне значення! Спробуйте ще раз.\n";
 		Sleep(1000);
+		return 99;
 	}
 	return answer;
 }
@@ -69,7 +63,7 @@ int ShowRegistrationForm(unsigned int LW, string& LOGIN,string& PASSWORD,string&
 	cout << left << setw(LenghtWidthMedium) << "Введіть логін" << ":";
 	cin >> LOGIN;
 	if (LOGIN.size() >= LOGIN_MAX_LENGTH) { cout << "Занадто довгий логін!"; Sleep(2000); return 2; }
-	if (SearchFS(LOGIN, false)) { cout <<"Користувач з таким ім'ям все існує!"; Sleep(2000); return 2; }
+	if (SearchFS(LOGIN, false)) { cout <<"Користувач з таким ім'ям вже існує!"; Sleep(2000); return 2; }
 	cout << left << setw(LenghtWidthMedium) << "Введіть пароль" << ":";
 	cin >> pass1;
 	cout << left << setw(LenghtWidthMedium) << "Введіть пароль ще раз" << ":";
@@ -119,7 +113,7 @@ int ShowNotesList(unsigned int LW, string& LOGIN, string& hashedPassword) {
 	}
 	else { cout << "Такого варіанту відповіді не існує!" << endl; Sleep(1000); return 1; }
 
-	return err;
+	return 1;
 }
 int ShowCreateNoteForm(unsigned int LW, string& LOGIN,string hashedPassword) {
 	system("CLS");
@@ -158,16 +152,22 @@ int ShowNote(unsigned int LW, string FileName, string LOGIN,string Password) {
 		cout << left << setw(LW) << DecryptNote(lines[i],Password) << endl;
 	}
 	cout << setw(LW) << setfill('=') << "=" << setfill(' ') << endl;
-	cout << left << setw(LenghtWidthMedium) << "Виберіть дію(EXIT,DEL)" << ":";
+	cout << left << setw(LenghtWidthMedium) << "Виберіть дію(BACK,DEL)" << ":";
 	cin >> answer;
 	if (answer == "BACK" or answer == "back" or answer == "Back" or answer == "bACK") {
-		cout << left << setw(LenghtWidthMedium) << "Введіть номер нотатки яку бажаете переглянути" << ":";
+		return 1;
 	}
 
 	else if (answer == "DEL" or answer == "del" or answer == "dEL" or answer == "Del") {
 		cout << "Ви впевнені? Ця дія видалить цю нотатку!(т/н):";
 		cin >> answer;
-		if (answer == "т") { cout << "Нотатка була видалена"; }
+		if (answer == "т") {
+			cout << "Нотатка була видалена";
+			fs::path filePath = "./users/" + LOGIN + "/" + FileName + ".txt";
+			if (fs::exists(filePath)) {
+				return fs::remove(filePath);  // Повертає true, якщо файл успішно видалено
+			}
+		}
 		else { return 0; }
 	}
 	else { cout << "Такого варіанту відповіді не існує!" << endl; Sleep(1000); return 1; }

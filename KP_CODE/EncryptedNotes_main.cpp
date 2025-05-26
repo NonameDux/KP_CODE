@@ -3,13 +3,13 @@
 
 int LineWidthFull = 50;
 void main() {
-	SetConsoleCP(1251);
-	SetConsoleOutputCP(1251);
-	string LOGIN;
-	string PASSWORD;
-	string hashedPassword;
-	int ERRORS = 1;
-    while (ERRORS != 0) {
+    SetConsoleCP(1251);
+    SetConsoleOutputCP(1251);
+    string LOGIN;
+    string PASSWORD;
+    string hashedPassword;
+    int ERRORS = 0;
+    do {
         switch (ShowStartMenu(LineWidthFull)) { //Стартове меню
         case 1:
             ERRORS = LoginUser(LineWidthFull, LOGIN, hashedPassword);
@@ -21,15 +21,15 @@ void main() {
             ERRORS = 0;
             exit(0);
             break;
+        default: ERRORS = 1;
 
         }
-        
-    }
-    ERRORS = 1;
-    while (ERRORS != 0) {
+
+    } while (ERRORS != 0);
+    do {
         switch (ShowMainMenu(LineWidthFull)) { //Стартове меню
         case 1:
-            ERRORS = ShowNotesList(LineWidthFull, LOGIN,hashedPassword);
+            ERRORS = ShowNotesList(LineWidthFull, LOGIN, hashedPassword);
             break;
         case 2:
             ERRORS = 1;
@@ -40,6 +40,7 @@ void main() {
             exit(0);
             break;
         default: ERRORS = 1;
+
         }
-    }    
+    } while (ERRORS != 0);
 }

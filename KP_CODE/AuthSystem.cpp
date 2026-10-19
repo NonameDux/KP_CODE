@@ -3,29 +3,34 @@
 
 
 using namespace std;
-
-int RegisterUser(unsigned int LW,const string& username, const string& password) {
+int RegisterUser(unsigned int LW, const string& username, const string& password, string& hashedPassword) {
     string u = username, p = password;
-    int err = ShowRegistrationForm(LW,u,p);
-    string hashedPassword = DeriveAESKeyFromPassword(p);
+    int err = 0;
+
+     err = ShowRegistrationForm(LW, u, p, hashedPassword);
     if (err == 1) {
         cout << "Введені паролі не співпадають" << endl;
         Sleep(5000);
-        err = ShowRegistrationForm(LW, u, p);
+        err = ShowRegistrationForm(LW, u, p, hashedPassword);
+        return 1;
     }
-    else if (err == 0) { CreateUserFolder(u, hashedPassword); cout << "\nРегістрація успішна, для входу в аккаунт буде використовуватися логін \"" << u << "\"" << endl; }
-    return 0;
+    else if (err == 0) {
+        CreateUserFolder(u, hashedPassword);
+        cout << "\nРегістрація успішна, для входу в аккаунт буде використовуватися логін \"" << u << "\"";
+    }
+       
+    
+    return err;
 }
 
-int LoginUser(unsigned int LW, const string& username, const string& password) {
-    string u = username, p = password;
-    int err = ShowLoginForm(LW, u, p);
+int LoginUser(unsigned int LW,string& username, string& hashedPassword) {
+    int err = ShowLoginForm(LW, username, hashedPassword);
     if (err == 2) {
         cout << "Невірний пароль, трохи зачекайте і спробуйте знову." << endl;
         Sleep(5000);
-        err = ShowLoginForm(LW, u, p);
+        return 2;
     }
-    else if (err == 1) { cout << "Користувача з таким логіном не існує." << endl; }
-    else if (err == 0) { system("CLS"); cout << "\nВхід під логіном \"" << u << "\"" << endl; }
+    else if (err == 1) { system("CLS"); cout << "Користувача з таким логіном не існує." << endl; Sleep(3000); return 1; }
+    else if (err == 0) { system("CLS"); cout << "\nВхід під логіном \"" << username << "\"" << endl; }
     return 0;
 }
